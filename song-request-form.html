@@ -21,13 +21,15 @@
 
     <script>
       const firebaseConfig = {
-        apiKey: "AIza...",
-        authDomain: "your-app.firebaseapp.com",
-        projectId: "your-app-id",
-        storageBucket: "your-app.appspot.com",
-        messagingSenderId: "123456789",
-        appId: "1:1234567890:web:abcdefg",
+        apiKey: "AIzaSyBLZp3f5WAWkAJDpBidh-C2mib2nhnLys4",
+        authDomain: "song-request-a8a68.firebaseapp.com",
+        projectId: "song-request-a8a68",
+        storageBucket: "song-request-a8a68.appspot.com",
+        messagingSenderId: "522633732679",
+        appId: "1:522633732679:web:564894980a2e0484828762",
+        measurementId: "G-H6NY9N42JF",
       };
+
       firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
 
@@ -63,11 +65,9 @@
           });
 
           document.getElementById("confirmation").style.display = "block";
-          setTimeout(
-            () =>
-              (document.getElementById("confirmation").style.display = "none"),
-            2000
-          );
+          setTimeout(() => {
+            document.getElementById("confirmation").style.display = "none";
+          }, 2000);
           e.target.reset();
         });
     </script>
