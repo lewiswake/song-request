@@ -8,8 +8,20 @@
   <body>
     <h1>Request a Song</h1>
     <form id="requestForm">
-      <input type="text" id="artist" placeholder="Artist Name" required />
-      <input type="text" id="title" placeholder="Song Title" required />
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Start typing a song..."
+        autocomplete="off"
+        required
+      />
+      <ul id="suggestions"></ul>
+
+      <input type="hidden" id="artist" />
+      <input type="hidden" id="title" />
+      <input type="hidden" id="appleMusicUrl" />
+      <input type="hidden" id="artworkUrl" />
+
       <button type="submit">Submit</button>
     </form>
     <div id="confirmation">✅ Song request sent!</div>
@@ -32,12 +44,53 @@
       firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
 
+      const searchInput = document.getElementById("searchInput");
+      const suggestionsList = document.getElementById("suggestions");
+
+      let selectedTrack = null;
+
+      searchInput.addEventListener("input", async () => {
+        const query = searchInput.value.trim();
+        if (query.length < 3) {
+          suggestionsList.innerHTML = "";
+          return;
+        }
+
+        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(
+          query
+        )}&entity=song&limit=5`;
+        const response = await fetch(url);
+        const data = await response.json();
+
+        suggestionsList.innerHTML = "";
+        data.results.forEach((track) => {
+          const li = document.createElement("li");
+          li.textContent = `${track.trackName} — ${track.artistName}`;
+          li.addEventListener("click", () => {
+            document.getElementById("artist").value = track.artistName;
+            document.getElementById("title").value = track.trackName;
+            document.getElementById("appleMusicUrl").value = track.trackViewUrl;
+            document.getElementById("artworkUrl").value = track.artworkUrl100;
+            searchInput.value = `${track.trackName} — ${track.artistName}`;
+            suggestionsList.innerHTML = "";
+            selectedTrack = track;
+          });
+          suggestionsList.appendChild(li);
+        });
+      });
+
       document
         .getElementById("requestForm")
         .addEventListener("submit", async (e) => {
           e.preventDefault();
+
           const artist = document.getElementById("artist").value.trim();
           const title = document.getElementById("title").value.trim();
+          const appleMusicUrl = document
+            .getElementById("appleMusicUrl")
+            .value.trim();
+          const artworkUrl = document.getElementById("artworkUrl").value.trim();
+
           if (!artist || !title) return;
 
           const key = (artist + "||" + title).toLowerCase();
@@ -55,6 +108,8 @@
               tx.set(docRef, {
                 artist,
                 title,
+                appleMusicUrl,
+                artworkUrl,
                 timestamp: now,
                 lastRequested: now,
                 fulfilled: false,
@@ -69,6 +124,7 @@
             confirmation.style.display = "none";
           }, 2000);
           e.target.reset();
+          selectedTrack = null;
         });
     </script>
   </body>
