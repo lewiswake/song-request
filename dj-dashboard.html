@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>DJ Dashboard</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 2rem;
+        background: #111;
+        color: #fff;
+      }
+      h1 {
+        text-align: center;
+      }
+      #feed {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+      .card {
+        padding: 1rem;
+        background: #222;
+        border-left: 4px solid #0f0;
+        box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+      }
+      .card .artist {
+        font-weight: bold;
+        font-size: 1.2rem;
+      }
+      .card .title {
+        font-size: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Live Song Requests</h1>
+    <div id="feed"></div>
+
+    <script>
+      function loadFeed() {
+        const feed = document.getElementById("feed");
+        feed.innerHTML = ""; // Clear feed first
+
+        const requests = JSON.parse(
+          localStorage.getItem("songRequests") || "[]"
+        );
+        console.log("Loaded requests:", requests);
+
+        if (requests.length === 0) {
+          feed.innerHTML =
+            '<p style="text-align:center; color:#888;">No requests yet.</p>';
+          return;
+        }
+
+        requests.forEach((req) => {
+          const card = document.createElement("div");
+          card.className = "card";
+          card.innerHTML = `
+          <div class="artist">${req.artist}</div>
+          <div class="title">${req.title}</div>
+        `;
+          feed.appendChild(card);
+        });
+      }
+
+      // Initial load + auto-refresh
+      loadFeed();
+      setInterval(loadFeed, 3000);
+    </script>
+  </body>
+</html>

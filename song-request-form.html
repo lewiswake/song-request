@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Song Request</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        text-align: center;
+        padding: 2rem;
+      }
+      form {
+        max-width: 400px;
+        margin: auto;
+      }
+      input {
+        display: block;
+        width: 100%;
+        margin: 1rem 0;
+        padding: 0.5rem;
+        font-size: 1rem;
+      }
+      button {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+      .confirmation {
+        display: none;
+        color: green;
+        font-size: 1.2rem;
+        margin-top: 2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Request a Song</h1>
+    <form id="requestForm">
+      <input type="text" id="artist" placeholder="Artist Name" required />
+      <input type="text" id="title" placeholder="Song Title" required />
+      <button type="submit">Submit</button>
+    </form>
+    <div class="confirmation" id="confirmation">✅ Song request sent!</div>
+
+    <script>
+      document
+        .getElementById("requestForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const artist = document.getElementById("artist").value.trim();
+          const title = document.getElementById("title").value.trim();
+
+          if (!artist || !title) return;
+
+          const requests = JSON.parse(
+            localStorage.getItem("songRequests") || "[]"
+          );
+          const newRequest = { artist, title, timestamp: Date.now() };
+          requests.unshift(newRequest);
+          localStorage.setItem("songRequests", JSON.stringify(requests));
+
+          console.log("Saved request:", newRequest);
+          console.log("All requests:", requests);
+
+          document.getElementById("confirmation").style.display = "block";
+          this.reset();
+        });
+    </script>
+  </body>
+</html>
