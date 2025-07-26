@@ -1,103 +1,117 @@
-/* dj-dashboard.css — Liquid Glass style, mobile-first */
+/* dj-dashboard.css — Material You Mobile-first Design */
+
+/* Typography */
 body {
   margin: 0;
   padding: 1rem;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
-  background: linear-gradient(
-    160deg,
-    rgba(255, 255, 255, 0.4),
-    rgba(240, 240, 255, 0.6)
-  );
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  color: #111;
+  font-family: "Roboto", sans-serif;
+  background-color: #f5f5f5;
+  color: #1f1f1f;
 }
 
 h1 {
   font-size: 1.5rem;
+  font-weight: 500;
   text-align: center;
   margin-bottom: 1rem;
 }
 
+/* Controls row */
 .controls {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.75rem;
   margin-bottom: 1rem;
   justify-content: center;
 }
 
+/* Search field + selector + button styling */
 input[type="search"],
-select,
-button {
-  padding: 0.6rem;
+select {
   font-size: 1rem;
-  border-radius: 12px;
-  border: 1px solid #ccc;
-  background: rgba(255, 255, 255, 0.6);
-  color: #111;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
   outline: none;
-  min-width: 120px;
+}
+
+input[type="search"]:focus,
+select:focus {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.16);
 }
 
 button {
-  background: #007aff;
-  color: white;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
   border: none;
+  border-radius: 8px;
+  background-color: #6200ee;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s;
 }
 
 button:hover {
-  background: #005ecb;
+  background-color: #3700b3;
 }
 
+/* Card styling */
 .card {
-  background: rgba(255, 255, 255, 0.5);
-  border-left: 4px solid #0f0;
+  position: relative;
+  background-color: #ffffff;
   border-radius: 12px;
   padding: 1rem;
   margin-bottom: 0.75rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  position: relative;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  transition: background-color 0.3s;
 }
 
+/* New-item flash animation */
 .card.new {
   animation: flash 1s;
 }
 
 @keyframes flash {
   from {
-    background: rgba(200, 255, 200, 0.7);
+    background-color: #e8f5e9;
   }
   to {
-    background: rgba(255, 255, 255, 0.5);
+    background-color: #ffffff;
   }
 }
 
-.fulfilled {
+.card.fulfilled {
   opacity: 0.6;
-  border-left-color: #888;
 }
 
-.timestamp {
-  font-size: 0.8rem;
-  color: #555;
-}
-
+/* Badge for count (Material Badge style) */
 .count {
   position: absolute;
-  top: 1rem;
-  left: 1rem;
-  background: #0f0;
-  color: #000;
-  padding: 2px 6px;
-  border-radius: 6px;
+  top: 16px;
+  left: 16px;
+  background-color: #018786;
+  color: #ffffff;
+  border-radius: 12px;
+  padding: 2px 8px;
   font-size: 0.75rem;
+  font-weight: 500;
 }
 
+/* Timestamp text */
+.timestamp {
+  font-size: 0.75rem;
+  color: #616161;
+  margin-top: 0.25rem;
+}
+
+/* Checkbox styling remains minimal */
 .checkbox {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: 16px;
+  right: 16px;
   transform: scale(1.3);
 }
