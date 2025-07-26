@@ -4,70 +4,204 @@
     <meta charset="UTF-8" />
     <title>DJ Dashboard</title>
     <style>
+      /* Add styles for animations, tabs, search, ordering, CSV button */
       body {
         font-family: sans-serif;
-        padding: 2rem;
         background: #111;
         color: #fff;
+        padding: 2rem;
       }
-      h1 {
-        text-align: center;
-      }
-      #feed {
+      .controls {
         display: flex;
-        flex-direction: column;
         gap: 1rem;
-        margin-top: 2rem;
+        margin-bottom: 1rem;
+        align-items: center;
+      }
+      input[type="search"] {
+        padding: 0.5rem;
+        width: 200px;
+      }
+      select,
+      button {
+        padding: 0.5rem;
+        background: #333;
+        color: #fff;
+        border: 1px solid #555;
+        cursor: pointer;
       }
       .card {
         padding: 1rem;
         background: #222;
         border-left: 4px solid #0f0;
-        box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+        margin-bottom: 0.5rem;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.3s, transform 0.3s;
+        position: relative;
       }
-      .card .artist {
-        font-weight: bold;
-        font-size: 1.2rem;
+      .card.new {
+        opacity: 1;
+        transform: none;
+        animation: flash 1s;
       }
-      .card .title {
-        font-size: 1rem;
+      @keyframes flash {
+        from {
+          background: #444;
+        }
+        to {
+          background: #222;
+        }
+      }
+      .fulfilled {
+        opacity: 0.6;
+        border-left-color: #888;
+      }
+      .timestamp {
+        font-size: 0.8rem;
+        color: #aaa;
+      }
+      .count {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        background: #0f0;
+        color: #000;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+      }
+      .checkbox {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        transform: scale(1.3);
       }
     </style>
   </head>
   <body>
     <h1>Live Song Requests</h1>
+    <div class="controls">
+      <input
+        type="search"
+        id="searchInput"
+        placeholder="Search artist or title"
+      />
+      <select id="sortSelect">
+        <option value="timestamp">Latest</option>
+        <option value="count">Most Requested</option>
+      </select>
+      <button id="exportBtn">Export CSV</button>
+    </div>
     <div id="feed"></div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+
     <script>
-      function loadFeed() {
-        const feed = document.getElementById("feed");
-        feed.innerHTML = ""; // Clear feed first
+      const firebaseConfig = {
+        /* same config as above */
+      };
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
 
-        const requests = JSON.parse(
-          localStorage.getItem("songRequests") || "[]"
-        );
-        console.log("Loaded requests:", requests);
+      const feed = document.getElementById("feed");
+      const searchInput = document.getElementById("searchInput");
+      const sortSelect = document.getElementById("sortSelect");
+      const exportBtn = document.getElementById("exportBtn");
 
-        if (requests.length === 0) {
-          feed.innerHTML =
-            '<p style="text-align:center; color:#888;">No requests yet.</p>';
-          return;
-        }
+      let requestsMap = {};
 
-        requests.forEach((req) => {
+      function formatTimeAgo(ts) {
+        const diff = Math.floor((Date.now() - ts) / 1000);
+        if (diff < 60) return diff + "s ago";
+        if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+        if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
+        return Math.floor(diff / 86400) + "d ago";
+      }
+
+      function renderFeed() {
+        const all = Object.values(requestsMap);
+        let filtered = all.filter((r) => {
+          const q = searchInput.value.toLowerCase();
+          return (
+            r.artist.toLowerCase().includes(q) ||
+            r.title.toLowerCase().includes(q)
+          );
+        });
+        filtered.sort((a, b) => {
+          if (sortSelect.value === "count") return b.count - a.count;
+          return b.lastRequested - a.lastRequested;
+        });
+        feed.innerHTML = "";
+        filtered.forEach((req) => {
           const card = document.createElement("div");
-          card.className = "card";
+          card.className = "card" + (req.fulfilled ? " fulfilled" : "");
           card.innerHTML = `
+          <div class="count">${req.count}</div>
           <div class="artist">${req.artist}</div>
           <div class="title">${req.title}</div>
+          <div class="timestamp">${formatTimeAgo(req.timestamp)}</div>
+          <input type="checkbox" class="checkbox" ${
+            req.fulfilled ? "checked" : ""
+          } title="${req.fulfilled ? "Undo" : "Mark done"}">
         `;
+          if (req.isNew) card.classList.add("new");
+          card.querySelector(".checkbox").addEventListener("change", (e) => {
+            db.collection("requests")
+              .doc(req.key)
+              .update({ fulfilled: e.target.checked });
+          });
           feed.appendChild(card);
+          delete req.isNew;
         });
       }
 
-      // Initial load + auto-refresh
-      loadFeed();
-      setInterval(loadFeed, 3000);
+      exportBtn.addEventListener("click", () => {
+        const rows = [
+          [
+            "Artist",
+            "Title",
+            "First Timestamp",
+            "Last Requested",
+            "Count",
+            "Fulfilled",
+          ],
+        ];
+        Object.values(requestsMap).forEach((r) =>
+          rows.push([
+            r.artist,
+            r.title,
+            new Date(r.timestamp).toISOString(),
+            new Date(r.lastRequested).toISOString(),
+            r.count,
+            r.fulfilled,
+          ])
+        );
+        const csv = rows
+          .map((r) => r.map((cell) => `"${cell}"`).join(","))
+          .join("\n");
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "song_requests.csv";
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      searchInput.addEventListener("input", renderFeed);
+      sortSelect.addEventListener("change", renderFeed);
+
+      db.collection("requests").onSnapshot((snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          const doc = change.doc;
+          const data = { ...doc.data(), key: doc.id };
+          if (change.type === "added") data.isNew = true;
+          requestsMap[doc.id] = data;
+        });
+        renderFeed();
+      });
     </script>
   </body>
 </html>
