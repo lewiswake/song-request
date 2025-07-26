@@ -21,7 +21,6 @@
     </div>
     <div id="feed"></div>
 
-    <!-- Firebase v8 SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
@@ -67,15 +66,26 @@
           if (sortSelect.value === "count") return b.count - a.count;
           return b.lastRequested - a.lastRequested;
         });
+
         feed.innerHTML = "";
         filtered.forEach((req) => {
           const card = document.createElement("div");
           card.className = "card" + (req.fulfilled ? " fulfilled" : "");
           card.innerHTML = `
           <div class="count">${req.count}</div>
+          ${
+            req.artworkUrl
+              ? `<img class="artwork" src="${req.artworkUrl}" alt="Artwork">`
+              : ""
+          }
           <div class="artist">${req.artist}</div>
           <div class="title">${req.title}</div>
           <div class="timestamp">${formatTimeAgo(req.timestamp)}</div>
+          ${
+            req.appleMusicUrl
+              ? `<a href="${req.appleMusicUrl}" class="apple-link" target="_blank">🎵 Listen on Apple Music</a>`
+              : ""
+          }
           <input type="checkbox" class="checkbox" ${
             req.fulfilled ? "checked" : ""
           } title="${req.fulfilled ? "Undo" : "Mark done"}">
