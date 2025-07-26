@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>Song Request</title>
+    <link rel="stylesheet" href="song-request-form.css" />
   </head>
   <body>
     <h1>Request a Song</h1>
@@ -11,9 +12,7 @@
       <input type="text" id="title" placeholder="Song Title" required />
       <button type="submit">Submit</button>
     </form>
-    <div id="confirmation" style="display: none; color: green">
-      ✅ Song request sent!
-    </div>
+    <div id="confirmation">✅ Song request sent!</div>
 
     <!-- Firebase v8 SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -64,9 +63,10 @@
             }
           });
 
-          document.getElementById("confirmation").style.display = "block";
+          const confirmation = document.getElementById("confirmation");
+          confirmation.style.display = "block";
           setTimeout(() => {
-            document.getElementById("confirmation").style.display = "none";
+            confirmation.style.display = "none";
           }, 2000);
           e.target.reset();
         });
