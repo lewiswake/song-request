@@ -97,3 +97,44 @@ button:hover {
     color: #03dac6;
   }
 }
+
+/* Improved suggestion item layout */
+#suggestions li {
+  display: block;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.suggestion-artwork {
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.suggestion-text {
+  flex: 1;
+}
+
+.suggestion-title {
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.suggestion-artist {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+@media (prefers-color-scheme: dark) {
+  .suggestion-artist {
+    color: #aaa;
+  }
+}
