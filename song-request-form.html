@@ -11,9 +11,9 @@
     <link rel="stylesheet" href="song-request-form.css" />
   </head>
   <body class="bg-light text-dark">
-    <div class="container py-4">
+    <main class="container-fluid px-3 py-4">
       <h1 class="text-center mb-4">Request a Song</h1>
-      <form id="requestForm" class="card p-3 shadow-sm">
+      <form id="requestForm" class="p-3">
         <div class="mb-3">
           <input
             type="text"
@@ -27,21 +27,50 @@
         <ul id="suggestions" class="list-group mb-3"></ul>
         <img
           id="selectedArtwork"
-          style="display: none; max-width: 100px; border-radius: 8px"
+          class="d-block mx-auto mb-3 rounded"
+          style="max-width: 100px; display: none"
           class="mx-auto d-block mb-3"
-          alt="Artwork preview"
+          alt=""
+          aria-hidden="true"
         />
         <input type="hidden" id="artist" />
         <input type="hidden" id="title" />
         <input type="hidden" id="appleMusicUrl" />
         <input type="hidden" id="artworkUrl" />
 
-        <button type="submit" class="btn btn-primary w-100">Submit</button>
+        <h5 id="requestHeading" class="mt-4 d-none">Your request</h5>
+        <div
+          id="selectedSongCard"
+          class="card d-none mb-3 shadow-sm p-2 rounded"
+        >
+          <div class="d-flex align-items-start">
+            <img
+              id="cardArtwork"
+              src=""
+              alt=""
+              class="rounded me-3"
+              style="width: 44px; height: 44px"
+            />
+            <div>
+              <div id="cardTitle" class="fw-semibold"></div>
+              <div id="cardArtist" class="text-muted small"></div>
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          class="btn btn-primary w-100"
+          id="submitButton"
+          disabled
+        >
+          Submit
+        </button>
       </form>
       <div id="confirmation" class="text-center mt-3 text-success fw-medium">
         ✅ Song request sent!
       </div>
-    </div>
+    </main>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -63,6 +92,9 @@
       const suggestionsList = document.getElementById("suggestions");
 
       let selectedTrack = null;
+      document.getElementById("selectedSongCard").classList.add("d-none");
+      document.getElementById("submitButton").disabled = true;
+      document.getElementById("requestHeading").classList.add("d-none");
 
       searchInput.addEventListener("input", async () => {
         const query = searchInput.value.trim();
@@ -95,12 +127,22 @@
             document.getElementById("title").value = track.trackName;
             document.getElementById("appleMusicUrl").value = track.trackViewUrl;
             document.getElementById("artworkUrl").value = track.artworkUrl100;
-            searchInput.value = `${track.trackName} — ${track.artistName}`;
             document.getElementById("selectedArtwork").src =
               track.artworkUrl100;
             document.getElementById("selectedArtwork").style.display = "block";
             suggestionsList.innerHTML = "";
             selectedTrack = track;
+            document.getElementById("cardArtwork").src = track.artworkUrl100;
+            document.getElementById("cardTitle").textContent = track.trackName;
+            document.getElementById("cardArtist").textContent =
+              track.artistName;
+            document
+              .getElementById("selectedSongCard")
+              .classList.remove("d-none");
+            document
+              .getElementById("requestHeading")
+              .classList.remove("d-none");
+            document.getElementById("submitButton").disabled = false;
           });
           suggestionsList.appendChild(li);
         });
@@ -153,6 +195,9 @@
           e.target.reset();
           document.getElementById("selectedArtwork").style.display = "none";
           selectedTrack = null;
+          document.getElementById("selectedSongCard").classList.add("d-none");
+          document.getElementById("submitButton").disabled = true;
+          document.getElementById("requestHeading").classList.add("d-none");
         });
 
       // Hide confirmation if user revisits page
