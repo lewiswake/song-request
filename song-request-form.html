@@ -16,6 +16,7 @@
         required
       />
       <ul id="suggestions"></ul>
+      <img id="selectedArtwork" style="display: none" alt="Artwork preview" />
 
       <input type="hidden" id="artist" />
       <input type="hidden" id="title" />
@@ -27,8 +28,24 @@
     <div id="confirmation">✅ Song request sent!</div>
 
     <!-- Firebase v8 SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js">
+      window.addEventListener("load", () => {
+            const confirmation = document.getElementById("confirmation");
+            if (confirmation) {
+              confirmation.style.display = "none";
+            }
+          });
+    </script>
+    <script
+      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"
+    >
+      window.addEventListener("load", () => {
+            const confirmation = document.getElementById("confirmation");
+            if (confirmation) {
+              confirmation.style.display = "none";
+            }
+          });
+    </script>
 
     <script>
       const firebaseConfig = {
@@ -65,7 +82,9 @@
         suggestionsList.innerHTML = "";
         data.results.forEach((track) => {
           const li = document.createElement("li");
-          li.textContent = `${track.trackName} — ${track.artistName}`;
+
+          li.innerHTML = `<img src="${track.artworkUrl60}" alt="artwork"><span>${track.trackName} — ${track.artistName}</span>`;
+
           li.addEventListener("click", () => {
             document.getElementById("artist").value = track.artistName;
             document.getElementById("title").value = track.trackName;
@@ -74,6 +93,9 @@
             searchInput.value = `${track.trackName} — ${track.artistName}`;
             suggestionsList.innerHTML = "";
             selectedTrack = track;
+            document.getElementById("selectedArtwork").src =
+              track.artworkUrl100;
+            document.getElementById("selectedArtwork").style.display = "block";
           });
           suggestionsList.appendChild(li);
         });
@@ -126,6 +148,12 @@
           e.target.reset();
           selectedTrack = null;
         });
+      window.addEventListener("load", () => {
+        const confirmation = document.getElementById("confirmation");
+        if (confirmation) {
+          confirmation.style.display = "none";
+        }
+      });
     </script>
   </body>
 </html>
