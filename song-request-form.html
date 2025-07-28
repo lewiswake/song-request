@@ -83,7 +83,15 @@
         data.results.forEach((track) => {
           const li = document.createElement("li");
 
-          li.innerHTML = `<img src="${track.artworkUrl60}" alt="artwork"><span>${track.trackName} — ${track.artistName}</span>`;
+          li.innerHTML = `
+          <div class="suggestion-item">
+            <img src="${track.artworkUrl60}" alt="Artwork" class="suggestion-artwork">
+            <div class="suggestion-text">
+              <div class="suggestion-title">${track.trackName}</div>
+              <div class="suggestion-artist">${track.artistName}</div>
+            </div>
+          </div>
+        `;
 
           li.addEventListener("click", () => {
             document.getElementById("artist").value = track.artistName;
