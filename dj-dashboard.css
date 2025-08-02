@@ -1,191 +1,133 @@
-/* dj-dashboard.css — Material You Mobile-first Design */
-
-/* Typography */
 body {
   margin: 0;
   padding: 1rem;
-  font-family: "Roboto", sans-serif;
-  background-color: #f5f5f5;
-  color: #1f1f1f;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #121212;
+  color: #ffffff;
 }
 
 h1 {
   font-size: 1.5rem;
-  font-weight: 500;
-  text-align: center;
+  font-weight: 600;
   margin-bottom: 1rem;
+  text-align: center;
 }
 
-/* Controls row */
 .controls {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
   justify-content: center;
-}
-
-/* Search field + selector + button styling */
-input[type="search"],
-select {
-  font-size: 1rem;
-  padding: 0.5rem 0.75rem;
-  border: none;
-  border-radius: 8px;
-  background-color: #ffffff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
-  outline: none;
-}
-
-input[type="search"]:focus,
-select:focus {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.16);
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 button {
-  font-size: 1rem;
-  font-weight: 500;
-  padding: 0.5rem 1rem;
+  background-color: #3e2c6d;
+  color: white;
   border: none;
   border-radius: 8px;
-  background-color: #3e2c6d;
-  color: #ffffff;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.2s;
 }
 
 button:hover {
   background-color: #2d2050;
 }
 
-/* Card styling */
+.feed {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
 .card {
-  position: relative;
-  background-color: #ffffff;
-  border-radius: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background-color: #1e1e1e;
   padding: 1rem;
-  margin-bottom: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-  transition: background-color 0.3s;
+  border-radius: 12px;
+  transition: all 0.3s ease;
 }
 
-/* New-item flash animation */
-.card.new {
-  animation: flash 1s;
+.card.fulfilled {
+  opacity: 0.5;
 }
 
-@keyframes flash {
+.card-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.card-content {
+  flex: 1;
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.card-artist {
+  font-size: 0.875rem;
+  color: #bbb;
+}
+
+.card-time {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.checkbox {
+  width: 32px;
+  height: 32px;
+  transform: scale(1.3);
+  margin-top: 0.25rem;
+}
+/* === Animations for card appearance and removal === */
+
+/* Fade + slide in */
+@keyframes fadeInSlide {
   from {
-    background-color: #e8f5e9;
+    opacity: 0;
+    transform: translateY(8px);
   }
   to {
-    background-color: #ffffff;
+    opacity: 1;
+    transform: translateY(0);
   }
-}
-
-.card.fulfilled {
-  opacity: 0.6;
-}
-
-/* Badge for count (Material Badge style) */
-.count {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  background-color: #018786;
-  color: #ffffff;
-  border-radius: 12px;
-  padding: 2px 8px;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-/* Timestamp text */
-.timestamp {
-  font-size: 0.75rem;
-  color: #616161;
-  margin-top: 0.25rem;
-}
-
-/* Checkbox styling remains minimal */
-.checkbox {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  transform: scale(1.3);
-}
-
-/* Adjustments for badge and typography on dashboard cards */
-
-.card {
-  position: relative;
-  background-color: #ffffff;
-  border-radius: 12px;
-  padding: 1rem 1rem 1rem 3rem; /* space for badge */
-  margin-bottom: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
 .card.new {
-  animation: flash 1s;
+  animation: fadeInSlide 0.4s ease-out;
 }
 
-.card.fulfilled {
-  opacity: 0.6;
-}
-
-.count {
-  position: absolute;
-  top: 0.75rem;
-  left: 0.75rem;
-  background-color: #018786;
-  color: #ffffff;
-  border-radius: 12px;
-  padding: 2px 8px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  z-index: 2;
-}
-
-.artist {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-}
-
-.title {
-  font-size: 0.95rem;
-  font-weight: 400;
-  color: #333;
-}
-
-.timestamp {
-  font-size: 0.75rem;
-  color: #616161;
-  margin-top: 0.25rem;
-}
-
-@media (prefers-color-scheme: dark) {
-  .card {
-    background-color: #1e1e1e;
-    color: #ffffff;
+/* Fade out */
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    height: auto;
+    margin: 1rem 0;
   }
-
-  .artist {
-    color: #ffffff;
+  to {
+    opacity: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
   }
+}
 
-  .title {
-    color: #cccccc;
-  }
+.card.removing {
+  animation: fadeOut 0.5s ease forwards;
+}
 
-  .timestamp {
-    color: #aaaaaa;
-  }
-
-  .count {
-    background-color: #03dac6;
-    color: #000;
-  }
+/* Smooth layout transition */
+.card {
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }

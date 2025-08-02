@@ -1,151 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>DJ Dashboard</title>
-    <link rel="stylesheet" href="dj-dashboard.css" />
-  </head>
-  <body>
-    <h1>Live Song Requests</h1>
-    <div class="controls">
-      <input
-        type="search"
-        id="searchInput"
-        placeholder="Search artist or title"
-      />
-      <select id="sortSelect">
-        <option value="timestamp">Latest</option>
-        <option value="count">Most Requested</option>
-      </select>
-      <button id="exportBtn">Export CSV</button>
-    </div>
-    <div id="feed"></div>
+<head>
+  <meta charset="UTF-8" />
+  <title>DJ Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="dj-dashboard.css" />
+</head>
+<body class="dark">
+  <h1>Live Song Requests</h1>
+  <div class="controls">
+    <button id="clearAllBtn">🧹 Clear All</button>
+  </div>
+  <div id="feed" class="feed"></div>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-    <script>
-      const firebaseConfig = {
-        apiKey: "AIzaSyBLZp3f5WAWkAJDpBidh-C2mib2nhnLys4",
-        authDomain: "song-request-a8a68.firebaseapp.com",
-        projectId: "song-request-a8a68",
-        storageBucket: "song-request-a8a68.appspot.com",
-        messagingSenderId: "522633732679",
-        appId: "1:522633732679:web:564894980a2e0484828762",
-        measurementId: "G-H6NY9N42JF",
-      };
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBLZp3f5WAWkAJDpBidh-C2mib2nhnLys4",
+      authDomain: "song-request-a8a68.firebaseapp.com",
+      projectId: "song-request-a8a68",
+      storageBucket: "song-request-a8a68.appspot.com",
+      messagingSenderId: "522633732679",
+      appId: "1:522633732679:web:564894980a2e0484828762"
+    };
 
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.firestore();
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const feed = document.getElementById("feed");
+    const clearAllBtn = document.getElementById("clearAllBtn");
+    let requestsMap = {};
 
-      const feed = document.getElementById("feed");
-      const searchInput = document.getElementById("searchInput");
-      const sortSelect = document.getElementById("sortSelect");
-      const exportBtn = document.getElementById("exportBtn");
+    function formatTimeAgo(ts) {
+      const diff = Math.floor((Date.now() - ts) / 1000);
+      if (diff < 60) return diff + "s ago";
+      if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+      if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
+      return Math.floor(diff / 86400) + "d ago";
+    }
 
-      let requestsMap = {};
+    function renderFeed() {
+      const all = Object.values(requestsMap);
+      all.sort((a, b) => {
+        if (a.fulfilled && !b.fulfilled) return 1;
+        if (!a.fulfilled && b.fulfilled) return -1;
+        return b.lastRequested - a.lastRequested;
+      });
 
-      function formatTimeAgo(ts) {
-        const diff = Math.floor((Date.now() - ts) / 1000);
-        if (diff < 60) return diff + "s ago";
-        if (diff < 3600) return Math.floor(diff / 60) + "m ago";
-        if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
-        return Math.floor(diff / 86400) + "d ago";
-      }
-
-      function renderFeed() {
-        const all = Object.values(requestsMap);
-        let filtered = all.filter((r) => {
-          const q = searchInput.value.toLowerCase();
-          return (
-            r.artist.toLowerCase().includes(q) ||
-            r.title.toLowerCase().includes(q)
-          );
-        });
-        filtered.sort((a, b) => {
-          if (sortSelect.value === "count") return b.count - a.count;
-          return b.lastRequested - a.lastRequested;
-        });
-
-        feed.innerHTML = "";
-        filtered.forEach((req) => {
-          const card = document.createElement("div");
-          card.className = "card" + (req.fulfilled ? " fulfilled" : "");
-          card.innerHTML = `
-          <div class="count">${req.count}</div>
-          ${
-            req.artworkUrl
-              ? `<img class="artwork" src="${req.artworkUrl}" alt="Artwork">`
-              : ""
-          }
-          <div class="artist">${req.artist}</div>
-          <div class="title">${req.title}</div>
-          <div class="timestamp">${formatTimeAgo(req.timestamp)}</div>
-          ${
-            req.appleMusicUrl
-              ? `<a href="${req.appleMusicUrl}" class="apple-link" target="_blank">🎵 Listen on Apple Music</a>`
-              : ""
-          }
-          <input type="checkbox" class="checkbox" ${
-            req.fulfilled ? "checked" : ""
-          } title="${req.fulfilled ? "Undo" : "Mark done"}">
+      feed.innerHTML = "";
+      all.forEach((req) => {
+        const card = document.createElement("div");
+        card.className = "card" + (req.fulfilled ? " fulfilled" : "");
+        card.innerHTML = `
+          <img src="${req.artworkUrl}" class="card-thumb" alt="Artwork" />
+          <div class="card-content">
+            <div class="card-title">${req.title}</div>
+            <div class="card-artist">${req.artist}</div>
+            <div class="card-time">${formatTimeAgo(req.timestamp)}</div>
+          </div>
+          <input type="checkbox" class="checkbox" ${req.fulfilled ? "checked" : ""} />
         `;
-          if (req.isNew) card.classList.add("new");
-          card.querySelector(".checkbox").addEventListener("change", (e) => {
-            db.collection("requests")
-              .doc(req.key)
-              .update({ fulfilled: e.target.checked });
-          });
-          feed.appendChild(card);
-          delete req.isNew;
+        const checkbox = card.querySelector(".checkbox");
+        checkbox.addEventListener("change", (e) => {
+          if (e.target.checked) {
+            card.classList.add("removing");
+            setTimeout(() => db.collection("requests").doc(req.key).update({ fulfilled: true }), 400);
+          } else {
+            db.collection("requests").doc(req.key).update({ fulfilled: false });
+          }
         });
-      }
-
-      exportBtn.addEventListener("click", () => {
-        const rows = [
-          [
-            "Artist",
-            "Title",
-            "First Timestamp",
-            "Last Requested",
-            "Count",
-            "Fulfilled",
-          ],
-        ];
-        Object.values(requestsMap).forEach((r) =>
-          rows.push([
-            r.artist,
-            r.title,
-            new Date(r.timestamp).toISOString(),
-            new Date(r.lastRequested).toISOString(),
-            r.count,
-            r.fulfilled,
-          ])
-        );
-        const csv = rows
-          .map((r) => r.map((cell) => `"${cell}"`).join(","))
-          .join("\n");
-        const blob = new Blob([csv], { type: "text/csv" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "song_requests.csv";
-        a.click();
-        URL.revokeObjectURL(url);
+        card.classList.add("new");
+        setTimeout(() => card.classList.remove("new"), 500);
+        feed.appendChild(card);
       });
+    }
 
-      searchInput.addEventListener("input", renderFeed);
-      sortSelect.addEventListener("change", renderFeed);
+    clearAllBtn.addEventListener("click", async () => {
+      if (!confirm("Clear all song requests?")) return;
+      const snapshot = await db.collection("requests").get();
+      const batch = db.batch();
+      snapshot.docs.forEach((doc) => batch.delete(doc.ref));
+      await batch.commit();
+    });
 
-      db.collection("requests").onSnapshot((snapshot) => {
-        snapshot.docChanges().forEach((change) => {
-          const doc = change.doc;
-          const data = { ...doc.data(), key: doc.id };
-          if (change.type === "added") data.isNew = true;
-          requestsMap[doc.id] = data;
-        });
-        renderFeed();
+    db.collection("requests").onSnapshot((snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        const doc = change.doc;
+        const data = { ...doc.data(), key: doc.id };
+        requestsMap[doc.id] = data;
       });
-    </script>
-  </body>
+      renderFeed();
+    });
+  </script>
+</body>
 </html>
