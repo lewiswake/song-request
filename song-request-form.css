@@ -1,165 +1,205 @@
-*,
-*::before,
-*::after {
+/* song-request-form.css */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
+
+:root {
+  --bg: #f4f4f4;
+  --fg: #222;
+  --card-bg: #fff;
+  --primary: #3e2c6d;
+  --primary-hover: #2d2050;
+  --success: #00796b;
+  --border: #ccc;
+  --shadow: rgba(0, 0, 0, 0.15);
+  --font: "Inter", sans-serif;
+  --radius: 8px;
+  --spacing: 1rem;
+  --font-size-base: 18px;
+  --input-text: var(--fg);
+}
+
+* {
   box-sizing: border-box;
 }
 
-/* song-request-form.css — includes Material You styling and dark mode via prefers-color-scheme */
-
 body {
   margin: 0;
-  padding: 2rem;
-  font-family: "Roboto", sans-serif;
-  background-color: #f5f5f5;
-  color: #1f1f1f;
+  padding: var(--spacing);
+  font-family: var(--font);
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--fg);
 }
 
-h1 {
-  margin-bottom: 2rem;
-  font-size: 1.75rem;
-  font-weight: 500;
-  text-align: center;
-}
-
-form {
-  width: 100%;
+.wrapper {
   max-width: 480px;
   margin: 0 auto;
+}
+
+.title {
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+.form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--spacing);
 }
 
-input[type="text"] {
-  background-color: #ffffff !important;
-  background-color: #ffffff;
-  color: #000000;
-  font-size: 1rem;
-  padding: 0.75rem 1rem;
-  border: none;
-  border-radius: 8px;
-  background-color: #ffffff;
-  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.12);
-  outline: none;
+.input,
+.button {
+  width: 100%;
+  font-size: 1.125rem;
+  padding: var(--spacing);
+  border-radius: var(--radius);
+  text-decoration: none;
+  font-family: var(--font);
 }
 
-input[type="text"]:focus {
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.16);
+.input {
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--input-text);
 }
 
-input::placeholder {
-  color: #9e9e9e;
-}
-
-button {
-  font-size: 1rem;
-  font-weight: 500;
-  padding: 0.75rem;
-  border: none;
-  border-radius: 8px;
-  background-color: #3e2c6d;
-  color: #ffffff;
+.button {
+  display: inline-block;
+  text-align: center;
+  background: var(--primary);
+  color: #fff;
   cursor: pointer;
   transition: background-color 0.2s;
+  text-decoration: none;
+  border: none;
+  font-family: var(--font);
+  font-weight: 500;
 }
 
-button:hover {
-  background-color: #2d2050;
+.button:disabled {
+  background: #aaa;
+  cursor: not-allowed;
 }
 
-#confirmation {
-  margin-top: 1rem;
-  font-size: 1rem;
-  color: #00796b;
+.button:not(:disabled):hover {
+  background: var(--primary-hover);
+}
+
+.confirmation {
+  margin-top: var(--spacing);
   text-align: center;
+  font-weight: 500;
+  color: var(--success);
+  font-family: var(--font);
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  body {
-    background-color: #121212;
-    color: #ffffff;
-  }
-
-  input[type="text"] {
-    background-color: #ffffff !important;
-    background-color: #1e1e1e;
-    color: #ffffff;
-    border: 1px solid #333;
-  }
-
-  input::placeholder {
-    color: #aaaaaa;
-  }
-
-  form {
-    background-color: transparent;
-  }
-
-  button {
-    background-color: #7e62bc;
-  }
-
-  button:hover {
-    background-color: #5d4694;
-  }
-
-  #confirmation {
-    color: #03dac6;
-  }
+.hidden {
+  display: none !important;
 }
 
-/* Improved suggestion item layout */
-#suggestions li {
-  display: block;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid #eee;
-  cursor: pointer;
+.suggestions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 6px var(--shadow);
+  max-height: none;
+  overflow-y: visible;
 }
 
 .suggestion-item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.75rem;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  font-family: var(--font);
 }
 
-.suggestion-artwork {
-  width: 44px;
-  height: 44px;
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-thumb,
+.card-thumb {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
   border-radius: 4px;
   object-fit: cover;
 }
 
-.suggestion-text {
-  flex: 1;
+.suggestion-text .track-title,
+.card-title {
+  font-weight: 600;
 }
 
-.suggestion-title {
-  font-weight: 500;
-  font-size: 1rem;
-}
-
-.suggestion-artist {
-  font-size: 0.85rem;
+.suggestion-text .track-artist,
+.card-artist {
+  font-size: 0.875rem;
   color: #666;
 }
 
+.card {
+  background: var(--card-bg);
+  border-radius: 10px;
+  padding: 0.75rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card-heading {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-family: var(--font);
+}
+
+.card-body {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: var(--spacing) 0;
+}
+
+.tip-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing);
+}
+
+.tip-footer h2 {
+  margin: 0;
+  text-align: left;
+  color: var(--fg);
+  font-family: var(--font);
+  font-weight: 500;
+}
+
+.tip-footer .button {
+  margin-top: 0;
+  padding: calc(var(--spacing) * 0.75) var(--spacing);
+  font-family: var(--font);
+  font-weight: 500;
+}
+
 @media (prefers-color-scheme: dark) {
-  .suggestion-artist {
-    color: #aaa;
+  :root {
+    --bg: #121212;
+    --fg: #fff;
+    --card-bg: #1e1e1e;
+    --border: #333;
+    --shadow: rgba(0, 0, 0, 0.5);
+    --input-text: #222;
   }
-}
-
-#suggestions li:hover,
-#suggestions li:focus {
-  background-color: #f0f0f0;
-}
-
-#suggestions li:active {
-  background-color: #e0e0e0;
-}
-
-button:active {
-  transform: scale(0.98);
-  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+  .suggestion-text .track-artist,
+  .card-artist {
+    color: #ccc;
+  }
 }
