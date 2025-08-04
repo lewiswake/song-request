@@ -1,97 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>DJ Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="dj-dashboard.css" />
-</head>
-<body class="dark">
-  <h1>Live Song Requests</h1>
-  <div class="controls">
-    <button id="clearAllBtn">🧹 Clear All</button>
-  </div>
-  <div id="feed" class="feed"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <title>DJ Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="dj-dashboard.css" />
+  </head>
+  <body>
+    <h1>Live Song Requests</h1>
+    <div class="controls">
+      <button id="clearAllBtn">🧹 Clear All</button>
+    </div>
+    <div id="feed" class="feed"></div>
 
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyBLZp3f5WAWkAJDpBidh-C2mib2nhnLys4",
+        authDomain: "song-request-a8a68.firebaseapp.com",
+        projectId: "song-request-a8a68",
+        storageBucket: "song-request-a8a68.appspot.com",
+        messagingSenderId: "522633732679",
+        appId: "1:522633732679:web:564894980a2e0484828762",
+      };
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBLZp3f5WAWkAJDpBidh-C2mib2nhnLys4",
-      authDomain: "song-request-a8a68.firebaseapp.com",
-      projectId: "song-request-a8a68",
-      storageBucket: "song-request-a8a68.appspot.com",
-      messagingSenderId: "522633732679",
-      appId: "1:522633732679:web:564894980a2e0484828762"
-    };
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+      const feed = document.getElementById("feed");
+      const clearAllBtn = document.getElementById("clearAllBtn");
+      let requestsMap = {};
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const feed = document.getElementById("feed");
-    const clearAllBtn = document.getElementById("clearAllBtn");
-    let requestsMap = {};
+      function formatTimeAgo(ts) {
+        const diff = Math.floor((Date.now() - ts) / 1000);
+        if (diff < 60) return diff + "s ago";
+        if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+        if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
+        return Math.floor(diff / 86400) + "d ago";
+      }
 
-    function formatTimeAgo(ts) {
-      const diff = Math.floor((Date.now() - ts) / 1000);
-      if (diff < 60) return diff + "s ago";
-      if (diff < 3600) return Math.floor(diff / 60) + "m ago";
-      if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
-      return Math.floor(diff / 86400) + "d ago";
-    }
+      function renderFeed() {
+        const all = Object.values(requestsMap);
+        all.sort((a, b) => {
+          if (a.fulfilled && !b.fulfilled) return 1;
+          if (!a.fulfilled && b.fulfilled) return -1;
+          return b.lastRequested - a.lastRequested;
+        });
 
-    function renderFeed() {
-      const all = Object.values(requestsMap);
-      all.sort((a, b) => {
-        if (a.fulfilled && !b.fulfilled) return 1;
-        if (!a.fulfilled && b.fulfilled) return -1;
-        return b.lastRequested - a.lastRequested;
-      });
-
-      feed.innerHTML = "";
-      all.forEach((req) => {
-        const card = document.createElement("div");
-        card.className = "card" + (req.fulfilled ? " fulfilled" : "");
-        card.innerHTML = `
+        feed.innerHTML = "";
+        all.forEach((req) => {
+          const card = document.createElement("div");
+          card.className = "card" + (req.fulfilled ? " fulfilled" : "");
+          card.innerHTML = `
           <img src="${req.artworkUrl}" class="card-thumb" alt="Artwork" />
           <div class="card-content">
             <div class="card-title">${req.title}</div>
             <div class="card-artist">${req.artist}</div>
             <div class="card-time">${formatTimeAgo(req.timestamp)}</div>
           </div>
-          <input type="checkbox" class="checkbox" ${req.fulfilled ? "checked" : ""} />
+          <input type="checkbox" class="checkbox" ${
+            req.fulfilled ? "checked" : ""
+          } />
         `;
-        const checkbox = card.querySelector(".checkbox");
-        checkbox.addEventListener("change", (e) => {
-          if (e.target.checked) {
-            card.classList.add("removing");
-            setTimeout(() => db.collection("requests").doc(req.key).update({ fulfilled: true }), 400);
-          } else {
-            db.collection("requests").doc(req.key).update({ fulfilled: false });
-          }
+          const checkbox = card.querySelector(".checkbox");
+          checkbox.addEventListener("change", (e) => {
+            if (e.target.checked) {
+              card.classList.add("removing");
+              setTimeout(
+                () =>
+                  db
+                    .collection("requests")
+                    .doc(req.key)
+                    .update({ fulfilled: true }),
+                400
+              );
+            } else {
+              db.collection("requests")
+                .doc(req.key)
+                .update({ fulfilled: false });
+            }
+          });
+          card.classList.add("new");
+          setTimeout(() => card.classList.remove("new"), 500);
+          feed.appendChild(card);
         });
-        card.classList.add("new");
-        setTimeout(() => card.classList.remove("new"), 500);
-        feed.appendChild(card);
-      });
-    }
+      }
 
-    clearAllBtn.addEventListener("click", async () => {
-      if (!confirm("Clear all song requests?")) return;
-      const snapshot = await db.collection("requests").get();
-      const batch = db.batch();
-      snapshot.docs.forEach((doc) => batch.delete(doc.ref));
-      await batch.commit();
-    });
-
-    db.collection("requests").onSnapshot((snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        const doc = change.doc;
-        const data = { ...doc.data(), key: doc.id };
-        requestsMap[doc.id] = data;
+      clearAllBtn.addEventListener("click", async () => {
+        if (!confirm("Clear all song requests?")) return;
+        const snapshot = await db.collection("requests").get();
+        const batch = db.batch();
+        snapshot.docs.forEach((doc) => batch.delete(doc.ref));
+        await batch.commit();
       });
-      renderFeed();
-    });
-  </script>
-</body>
+
+      db.collection("requests").onSnapshot((snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          const doc = change.doc;
+          const data = { ...doc.data(), key: doc.id };
+          requestsMap[doc.id] = data;
+        });
+        renderFeed();
+      });
+    </script>
+  </body>
 </html>
